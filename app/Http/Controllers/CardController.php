@@ -90,7 +90,7 @@ class CardController extends Controller
                 $request->uuid = (string)Str::uuid();
             }
             // ソート
-            $validated['sort_num'] = '';
+            $validated['sort_num'] = 0;
 
             // DB登録
             Card::updateOrCreate(
