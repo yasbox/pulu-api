@@ -34,7 +34,8 @@ class CardPost extends FormRequest
             'site' => $this->site === null ? '' : $this->site,
             'description' => $this->description === null ? '' : $this->description,
             //'image_photo' => $this->image_photo === null ? '' : $this->image_photo,
-            'valid' => $this->valid === null ? '1' : $this->valid,
+            'is_list' => $this->is_list === null ? '1' : $this->is_list,
+            'is_share' => $this->is_share === null ? '1' : $this->is_share,
         ]);
     }
 
@@ -61,7 +62,8 @@ class CardPost extends FormRequest
             'site' => 'string|max:255',
             'description' => 'string',
             'image_photo.*' => 'nullable|file|image',
-            'valid' => 'required|boolean',
+            'is_list' => 'required|boolean',
+            'is_share' => 'required|boolean',
         ];
     }
 
@@ -90,7 +92,8 @@ class CardPost extends FormRequest
             'site' => 'ホームページ',
             'description' => '自由文',
             'image_photo' => 'イメージ写真',
-            'valid' => '公開設定',
+            'is_list' => '名刺リスト表示',
+            'is_share' => '名刺リスト共有',
         ];
     }
 }

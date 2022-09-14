@@ -25,6 +25,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/card/all', [App\Http\Controllers\CardController::class, 'getAll']);
     Route::post('/card/store', [App\Http\Controllers\CardController::class, 'store']);
     Route::post('/card/drop', [App\Http\Controllers\CardController::class, 'drop']);
+    Route::post('/card/sort', [App\Http\Controllers\CardController::class, 'sort']);
 });
 
 

@@ -37,7 +37,8 @@ class CreateCardsTable extends Migration
             $table->text('description');
             $table->string('image_photo');
             $table->integer('sort_num');
-            $table->boolean('valid');
+            $table->boolean('is_list');
+            $table->boolean('is_share');
             $table->timestamps();
         });
     }

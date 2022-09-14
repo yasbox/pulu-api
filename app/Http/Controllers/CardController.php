@@ -8,6 +8,7 @@ use App\Models\Card;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Myfunc\SaveImages;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ class CardController extends Controller
     public function getAll()
     {
         try {
-            $cards = Card::where('user_id', Auth::id())->orderBy('sort_num', 'desc')->get();
+            $cards = Card::where('user_id', Auth::id())->orderBy('sort_num', 'asc')->get();
         } catch (\Exception $ex) {
             Log::debug($ex->getMessage());
             $response['errors'] = ['サーバエラー' => $ex->getMessage()];
@@ -30,6 +31,18 @@ class CardController extends Controller
     {
         try {
             $cards = Card::where('uuid', $uuid)->get();
+
+            if ($cards[0]->is_list)
+            {
+                $lists = Card::where([
+                    ['uuid', '!=', $uuid],
+                    ['user_id', '=', $cards[0]->user_id],
+                    ['is_share', '=', '1'],
+                ])->get();
+
+                $cards = $cards->merge($lists);
+            }
+
         } catch (\Exception $ex) {
             Log::debug($ex->getMessage());
             $response['errors'] = ['サーバエラー' => $ex->getMessage()];
@@ -71,8 +84,9 @@ class CardController extends Controller
                 }
             }
 
-            // 古いファイルを削除
             $card = Card::where('uuid', $request->uuid)->first();
+
+            // 古いファイルを削除
             if (!is_null($card)) {
                 if ($request->file('face_photo') || $request->face_photo === null) {
                     Storage::delete('public/' . $card->face_photo);
@@ -86,11 +100,11 @@ class CardController extends Controller
             }
 
             // UUID作成
-            if (!$request->uuid) {
+            if (is_null($card)) {
                 $request->uuid = (string)Str::uuid();
             }
             // ソート
-            $validated['sort_num'] = 0;
+            $validated['sort_num'] = is_null($card) ? 0 : $card->sort_num;
 
             // DB登録
             Card::updateOrCreate(
@@ -98,6 +112,46 @@ class CardController extends Controller
                 $validated
             );
             
+        } catch (\Exception $ex) {
+            Log::debug($ex->getMessage());
+            $response['errors'] = ['サーバエラー' => $ex->getMessage()];
+            return response()->json($response, 422);
+        }
+
+        return response()->json('', 200);
+    }
+
+    public function sort(Request $request)
+    {
+        try {
+
+            $sortedCards = json_decode($request->sortedCards);
+
+            for ($i = 0; $i < count($sortedCards); $i++)
+            {
+                $sortedCards[$i] = get_object_vars($sortedCards[$i]); // オブジェクトを配列に
+                $sortedCards[$i]['sort_num'] = $i + 1;
+                $sortedCards[$i]['created_at'] = null; // 上書きされないけど、null にしないとエラー
+                $sortedCards[$i]['updated_at'] = new Carbon(); // 上書きされる
+            }
+
+            Card::upsert($sortedCards, ['id'], ['sort_num']);
+
+            /* $cards = Card::where([
+                ['user_id', '=', Auth::id()]
+            ])->get();
+
+            for ($i = 0; $i < count($sortedCards); $i++)
+            {
+                foreach ($cards as $card)
+                {
+                    if($card->id === $sortedCards[$i]->id){
+                        $card->sort_num = $i + 1;
+                        $card->save();
+                    }
+                }
+            } */
+
         } catch (\Exception $ex) {
             Log::debug($ex->getMessage());
             $response['errors'] = ['サーバエラー' => $ex->getMessage()];

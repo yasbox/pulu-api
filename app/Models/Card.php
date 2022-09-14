@@ -29,7 +29,8 @@ class Card extends Model
         'description',
         'image_photo',
         'sort_num',
-        'valid',
+        'is_list',
+        'is_share',
     ];
 
     // 配列に変換して取得する
