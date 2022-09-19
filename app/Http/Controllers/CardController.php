@@ -38,7 +38,7 @@ class CardController extends Controller
                     ['uuid', '!=', $uuid],
                     ['user_id', '=', $cards[0]->user_id],
                     ['is_share', '=', '1'],
-                ])->get();
+                ])->orderBy('sort_num', 'asc')->get();
 
                 $cards = $cards->merge($lists);
             }
